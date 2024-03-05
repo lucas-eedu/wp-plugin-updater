@@ -15,11 +15,19 @@ async function crawler() {
     try {
       await page.goto(`http://${domain}/?root`, { waitUntil: "networkidle2" });
 
+      const loginForm = await page.$("#user_login");
+
+      if (!loginForm) {
+        await page.goto(`http://${domain}/wp-admin`, {
+          waitUntil: "networkidle2",
+        });
+      }
+
       await page.type("#user_login", username);
       await page.type("#user_pass", password);
       await page.click("#wp-submit");
 
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       await page.goto(`http://${domain}/wp-admin/plugins.php`, {
         waitUntil: "networkidle2",
@@ -28,7 +36,7 @@ async function crawler() {
       const updateButton = await page.$("tr#mainwp-child-update .update-link");
       if (updateButton) {
         await updateButton.click();
-        await page.waitForSelector(".updated-message", { timeout: 30000 }); // Espera a mensagem de sucesso por até 30 segundos
+        await page.waitForSelector(".updated-message", { timeout: 30000 });
 
         const updatedMessage = await page.$(".updated-message");
         if (updatedMessage) {
